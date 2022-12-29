@@ -2,12 +2,12 @@ package models
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/jackc/pgx/v4"
+	"gorm.io/gorm"
 )
 
 type Context struct {
 	Context gin.Context
-	DBConn  *pgx.Conn
+	DBConn  *gorm.DB
 }
 
 type Config struct {
@@ -16,7 +16,12 @@ type Config struct {
 	DBUserPassword string `mapstructure:"POSTGRES_PASSWORD"`
 	DBName         string `mapstructure:"POSTGRES_DB"`
 	DBPort         string `mapstructure:"POSTGRES_PORT"`
+	DBOptions      string `mapstructure:"POSTGRE_OPTIONS"`
 	ServerPort     string `mapstructure:"PORT"`
 
 	ClientOrigin string `mapstructure:"CLIENT_ORIGIN"`
+
+	GoogleApiClientID     string `mapstructure:"GOOGLE_API_CLIENT_ID"`
+	GoogleApiClientSecret string `mapstructure:"GOOGLE_API_CLIENT_SECRET"`
+	OAuthStateString      string `mapstructure:"OAUTH_STATE_STRING"`
 }

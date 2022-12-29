@@ -1,24 +1,38 @@
 package services
 
 import (
-	"context"
 	"fmt"
+	"log"
 	"os"
 
 	"github.com/basarrcan/NPCAI/models"
-	"github.com/jackc/pgx/v4"
+	"github.com/basarrcan/NPCAI/utils"
+
+	"gorm.io/driver/postgres"
+	"gorm.io/gorm"
 )
 
-func ConnectDB(config *models.Config) *pgx.Conn {
+func ConnectDB() *gorm.DB {
 	var err error
-	ctx := context.Background()
-	connStr := fmt.Sprintf("postgres://%s:%s@%s:%s/%s", config.DBUserName, config.DBUserPassword, config.DBHost, config.DBPort, config.DBName)
-	conn, err := pgx.Connect(ctx, connStr)
 
+	// Load config
+	config, err := utils.LoadConfig(".")
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Unable to load config: %v\n", err)
+	}
+	// Connect to the database
+	connStr := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s %s", config.DBHost, config.DBPort, config.DBUserName, config.DBUserPassword, config.DBName, config.DBOptions)
+	db, err := gorm.Open(postgres.Open(connStr), &gorm.Config{})
+	autoMigrate(db)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Unable to connect to database: %v\n", err)
-		os.Exit(1)
 	}
-	defer conn.Close(ctx)
-	return conn
+	return db
+}
+
+func autoMigrate(db *gorm.DB) {
+	err := db.AutoMigrate(&models.User{})
+	if err != nil {
+		log.Fatalf("Unable automigrate database: %v\n", err)
+	}
 }
